@@ -66,7 +66,8 @@ namespace ZeroRazorPages
 
         private async Task CreateBuiltInData(IServiceProvider serviceProvider)
         {
-            
+            var _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
         }
     }
 }
