@@ -12,6 +12,7 @@ using ZeroRazorPages.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ZeroRazorPages.Models;
 
 namespace ZeroRazorPages
 {
@@ -66,7 +67,25 @@ namespace ZeroRazorPages
 
         private async Task CreateBuiltInData(IServiceProvider serviceProvider)
         {
-            var _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            try
+            {
+                var _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+                _context.Database.EnsureCreated();
+                if (!_context.RoleType.Any())
+                {
+                    _context.RoleType.Add(new RoleType {Name = "Director", Active = true});
+                    _context.RoleType.Add(new RoleType {Name = "Manager", Active = true});
+                    _context.RoleType.Add(new RoleType {Name = "Supervisor", Active = true});
+                    _context.RoleType.Add(new RoleType {Name = "Agent", Active = true});
+
+                    await _context.SaveChangesAsync();
+                }    
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
 
         }
     }
