@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
-using ZeroRazorPages.Data;
+using Webtest.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ZeroRazorPages.Models;
+using Webtest.Models;
 
-namespace ZeroRazorPages
+namespace Webtest
 {
     public class Startup
     {
@@ -32,13 +32,13 @@ namespace ZeroRazorPages
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddIdentity<ApplicationUser,ApplcationRole>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -46,14 +46,14 @@ namespace ZeroRazorPages
                 app.UseMigrationsEndPoint();
             }
             else
-            {
+            { 
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseStaticFiles(); 
 
             app.UseRouting();
 
@@ -61,32 +61,6 @@ namespace ZeroRazorPages
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapRazorPages(); });
-
-            CreateBuiltInData(serviceProvider).Wait();
-        }
-
-        private async Task CreateBuiltInData(IServiceProvider serviceProvider)
-        {
-            try
-            {
-                var _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-                _context.Database.EnsureCreated();
-                if (!_context.RoleType.Any())
-                {
-                    _context.RoleType.Add(new RoleType {Name = "Director", Active = true});
-                    _context.RoleType.Add(new RoleType {Name = "Manager", Active = true});
-                    _context.RoleType.Add(new RoleType {Name = "Supervisor", Active = true});
-                    _context.RoleType.Add(new RoleType {Name = "Agent", Active = true});
-
-                    await _context.SaveChangesAsync();
-                }    
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }  
-
         }
     }
 }
