@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Formats.Asn1;
 using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
@@ -44,9 +45,19 @@ namespace APICRUD.Models
                     .GetSection("DefaultConnection").Value);
         }
 
+        /// <summary>
+        /// post method
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public Five Add(Five model)
         {
-            throw new System.NotImplementedException();
+            string sql = "Insert into Fives(Id, Note) VALUE (2, 'Yera');Select Cast(Scope_Identity() as Int);";
+
+            var id = _dbConnection.Query<int>(sql).Single();
+            model.Id = id;
+            return model;
+
         }
 
         public Five GetById(int id)
@@ -100,6 +111,27 @@ namespace APICRUD.Models
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                return BadRequest();
+            }
+        }
+
+        [HttpPost]
+        [Produces("application/json", Type = typeof(Five))]
+        [Consumes("application/json")]
+        public IActionResult Post([FromBody] Five model)
+        {
+            try
+            {
+                if (model.Note == null || model.Note.Length < 1) ModelState.AddModelError("Note", "note is required");
+
+                if (!ModelState.IsValid) return BadRequest(ModelState); //400 error
+
+                var m = _repository.Add(model);
+
+                return Ok(m);
+            }
+            catch (Exception e)
+            {
                 return BadRequest();
             }
         }
