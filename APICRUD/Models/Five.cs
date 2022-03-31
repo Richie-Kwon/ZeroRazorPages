@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Formats.Asn1;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Dapper;
@@ -62,7 +63,8 @@ namespace APICRUD.Models
 
         public Five GetById(int id)
         {
-            throw new System.NotImplementedException();
+            string query = "Select * from Fives where Id =@id";
+            return _dbConnection.Query<Five>(query).Single();
         }
 
         public Five Update(Five model)
@@ -129,6 +131,26 @@ namespace APICRUD.Models
                 var m = _repository.Add(model);
 
                 return Ok(m);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{id:int}", Name="GetById")] // Can allocate a name to API
+        public IActionResult Get(int id)
+        {
+            try
+            {
+                var model = _repository.GetById(id);
+                if (model == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(model);
+
             }
             catch (Exception e)
             {
